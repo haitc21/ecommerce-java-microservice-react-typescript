@@ -7,15 +7,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.context.annotation.Import;
 
 import com.ecommerce.haitc.order.dto.OrderRequestDto;
+import com.ecommerce.haitc.order.stub.InventoryStubs;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureWireMock(port = 0)
 class OrderServiceApplicationTests {
 
     @LocalServerPort
@@ -26,10 +29,11 @@ class OrderServiceApplicationTests {
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = port;
     }
-	 @Test
+
+    @Test
     public void shouldCreateOrder() throws Exception {
         OrderRequestDto orderRequest = getOrderRequest();
-
+        InventoryStubs.stubInventoryCall(orderRequest.skuCode(), orderRequest.quantity());
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(orderRequest)
@@ -58,7 +62,7 @@ class OrderServiceApplicationTests {
     }
 
     private OrderRequestDto getOrderRequest() {
-        return new OrderRequestDto("202400001", "123456", BigDecimal.valueOf(12000), 10);
+        return new OrderRequestDto("202400001", "iphone_15", BigDecimal.valueOf(12000), 1);
     }
 
 }

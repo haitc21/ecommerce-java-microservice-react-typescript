@@ -17,25 +17,34 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProductService {
 
-    private final  ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
     public ProductDto create(ProductRequestDto dto) {
-        Product product = Product
-                .builder()
-                .name(dto.name())
-                .description(dto.description())
-                .price(dto.price())
-                .build();
+        Product product = mapToProduct(dto);
         productRepository.save(product);
         log.info("Create product successfully");
-        return new ProductDto(product.getId(), product.getName(), product.getDescription(), product.getPrice());
+        return mapToDto(product);
     }
 
     public List<ProductDto> getAll() {
         return productRepository
                 .findAll()
                 .stream()
-                .map(product -> new ProductDto(product.getId(), product.getName(), product.getDescription(), product.getPrice()))
+                .map(product -> mapToDto(product))
                 .toList();
+    }
+
+    private ProductDto mapToDto(Product product) {
+        return new ProductDto(product.getId(), product.getName(), product.getDescription(), product.getPrice());
+    }
+
+    private Product mapToProduct(ProductRequestDto dto) {
+        Product product = Product
+                .builder()
+                .name(dto.name())
+                .description(dto.description())
+                .price(dto.price())
+                .build();
+        return product;
     }
 }
