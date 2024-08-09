@@ -1,9 +1,9 @@
 version: "4"
 
 services:
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
+  db:
+    image: mongo:7.0.12
+    container_name: db
     ports:
       - "27017:27017"
     environment:
@@ -12,3 +12,24 @@ services:
     volumes:
       - ./data:/data/db
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: keycloak
+    ports:
+      - "8181:8080"
+    environment:
+      DB_VENDOR: mongodb
+      DB_ADDR: mongodb
+      DB_PORT: 27017
+      DB_DATABASE: ecommerce_keycloak
+      DB_USER: root
+      DB_PASSWORD: 123456
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: [ "start-dev", "--import-realm" ]
+    volumes:
+      - ./keycloak/realms/:/opt/keycloak/data/import/
+    restart: always
+    depends_on:
+      - db
